@@ -419,7 +419,9 @@ exports.getCurrentRevNumber = async (req, res) => {
       .select("id, title, current_rev")
       .eq("title", title)
       .maybeSingle();
-    if (pageErr) throw pageErr;
+    if (pageErr) {
+      throw pageErr;
+    }
     if (!page || !page.current_rev) {
       return res
         .status(404)
@@ -431,7 +433,9 @@ exports.getCurrentRevNumber = async (req, res) => {
       .select("id, rev_number")
       .eq("id", page.current_rev)
       .single();
-    if (currRevErr) throw currRevErr;
+    if (currRevErr) {
+      throw currRevErr;
+    }
 
     return res.json({
       page_id: page.id,
@@ -441,6 +445,67 @@ exports.getCurrentRevNumber = async (req, res) => {
     });
   } catch (err) {
     console.error("GET /page/current-rev Error:", err);
+    return res.status(500).json({ error: err.message });
+  }
+};
+
+exports.getClubArchiveSummary = async (req, res) => {
+  try {
+    const { clubId } = req.query;
+    if (!clubId) {
+      return res
+        .status(400)
+        .json({ error: "clubId 쿼리 파라미터가 필요합니다." });
+    }
+
+    const {
+      data: knowhow,
+      error: knowhowErr,
+      count: knowhowTotal,
+    } = await supabase
+      .from("pages")
+      .select(
+        "id, title, created_at, updated_at, created_by, club_id, is_public, is_knowhow",
+        { count: "exact" }
+      )
+      .eq("club_id", clubId)
+      .eq("is_knowhow", true)
+      .order("updated_at", { ascending: false });
+    if (knowhowErr) {
+      throw knowhowErr;
+    }
+
+    const {
+      data: work,
+      error: workErr,
+      count: workTotal,
+    } = await supabase
+      .from("pages")
+      .select(
+        "id, title, created_at, updated_at, created_by, club_id, is_public, is_knowhow",
+        { count: "exact" }
+      )
+      .eq("club_id", clubId)
+      .eq("is_knowhow", false)
+      .order("updated_at", { ascending: false });
+    if (workErr) {
+      throw workErr;
+    }
+
+    return res.json({
+      knowhow: knowhow ?? [],
+      work: work ?? [],
+      stats: {
+        knowhowTotal: knowhowTotal ?? 0,
+        workTotal: workTotal ?? 0,
+        total: (knowhowTotal ?? 0) + (workTotal ?? 0),
+        pageSize: 5,
+        knowhowTotalPages: Math.ceil((knowhowTotal ?? 0) / 5),
+        workTotalPages: Math.ceil((workTotal ?? 0) / 5),
+      },
+    });
+  } catch (err) {
+    console.error("GET /page/club/summary Error:", err);
     return res.status(500).json({ error: err.message });
   }
 };
