@@ -32,24 +32,33 @@ exports.savePage = [
         return res.status(401).json({ error: "Invalid token" });
       }
 
-      const { title, content, summary } = req.body;
+      const { clubId, title, content, summary, isPublic, wikiType } = req.body;
       const withLineDiff = String(req.query.with_line_diff || "") === "1";
-      if (!title || !content) {
-        return res.status(400).json({ error: "title과 content가 필요합니다." });
+      if (!title || !content || !clubId) {
+        return res
+          .status(400)
+          .json({ error: "title, content, clubId가 필요합니다." });
       }
 
       // 페이지 조회/생성
       let { data: page, error } = await supabase
         .from("pages")
-        .select("id, current_rev")
+        .select("id, current_rev, is_knowhow")
         .eq("title", title)
+        .eq("club_id", clubId)
         .maybeSingle();
       if (error) throw error;
 
       if (!page) {
         const { data: inserted, error: err2 } = await supabase
           .from("pages")
-          .insert({ title, created_by: user.id })
+          .insert({
+            title,
+            club_id: clubId,
+            created_by: user.id,
+            is_public: isPublic,
+            is_knowhow: wikiType === "knowhow",
+          })
           .select("id, current_rev")
           .single();
         if (err2) throw err2;
@@ -123,6 +132,7 @@ exports.savePage = [
           current_rev: newRev.id,
           updated_at: new Date().toISOString(),
           content: doc,
+          is_public: isPublic,
         })
         .eq("id", page.id);
       if (updateErr) throw updateErr;
@@ -168,17 +178,20 @@ exports.savePage = [
 // 7) 리비전 조회 by title (Flat 검색)
 exports.getPage = async (req, res) => {
   try {
-    const { title } = req.query;
-    if (!title) {
+    const { title, clubId } = req.query;
+    if (!title || !clubId) {
       return res
         .status(400)
-        .json({ error: "title 쿼리 파라미터가 필요합니다." });
+        .json({ error: "title과 clubId 쿼리 파라미터가 필요합니다." });
     }
 
     const { data: page, error: pageErr } = await supabase
       .from("pages")
-      .select("id, current_rev, title, created_at, updated_at, created_by")
+      .select(
+        "id, current_rev, title, created_at, updated_at, created_by, club_id, is_public, is_knowhow"
+      )
       .eq("title", title)
+      .eq("club_id", clubId)
       .maybeSingle();
     if (pageErr) throw pageErr;
     if (!page || !page.current_rev) {
@@ -224,6 +237,9 @@ exports.getPage = async (req, res) => {
       meta: {
         id: page.id,
         title: page.title,
+        club_id: page.club_id,
+        is_public: page.is_public,
+        is_knowhow: page.is_knowhow,
         created_at: page.created_at,
         updated_at: page.updated_at,
         created_by: page.created_by,
@@ -309,12 +325,16 @@ exports.getRevisionByNumber = async (req, res) => {
   try {
     const { title, rev_number } = req.query;
     if (!title || !rev_number) {
-      return res.status(400).json({ error: "title과 rev_number가 필요합니다." });
+      return res
+        .status(400)
+        .json({ error: "title과 rev_number가 필요합니다." });
     }
     const raw = String(rev_number).trim();
     const n = parseInt(raw.replace(/^v/i, ""), 10);
     if (!Number.isFinite(n) || n < 1) {
-      return res.status(400).json({ error: "rev_number는 1 이상의 정수여야 합니다." });
+      return res
+        .status(400)
+        .json({ error: "rev_number는 1 이상의 정수여야 합니다." });
     }
 
     const { data: page, error: pageErr } = await supabase
@@ -324,7 +344,9 @@ exports.getRevisionByNumber = async (req, res) => {
       .maybeSingle();
     if (pageErr) throw pageErr;
     if (!page) {
-      return res.status(404).json({ error: "해당 제목의 페이지를 찾을 수 없습니다." });
+      return res
+        .status(404)
+        .json({ error: "해당 제목의 페이지를 찾을 수 없습니다." });
     }
 
     const { data: revRow, error: revErr } = await supabase
@@ -335,7 +357,9 @@ exports.getRevisionByNumber = async (req, res) => {
       .maybeSingle();
     if (revErr) throw revErr;
     if (!revRow) {
-      return res.status(404).json({ error: "해당 번호의 리비전을 찾을 수 없습니다." });
+      return res
+        .status(404)
+        .json({ error: "해당 번호의 리비전을 찾을 수 없습니다." });
     }
 
     const doc = revRow.is_snapshot
