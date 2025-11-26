@@ -6,25 +6,63 @@ const {
 } = require("../utils/diffUtils");
 const { reconstructRevisionContent } = require("../services/revisionServices");
 
-// 최근 리비전 목록과 diff 요약 반환
+// 최근 리비전 목록과 diff 요약 반환 (선택적 club_id 필터링)
 exports.listChanges = async (req, res) => {
   try {
     const limit = Math.max(parseInt(req.query.limit, 10) || 10, 1);
     const offset = Math.max(parseInt(req.query.offset, 10) || 0, 0);
 
-    // 1) 총 개수
-    const { count: totalCount, error: countErr } = await supabase
+    const clubId = req.query.clubId || null;
+
+    // clubId 가 주어지면, 해당 club 의 page_id 목록을 먼저 구한다.
+    let pageIds = null;
+    if (clubId) {
+      const { data: pagesForClub, error: pagesErr } = await supabase
+        .from("pages")
+        .select("id")
+        .eq("club_id", clubId);
+      if (pagesErr) {
+        throw pagesErr;
+      }
+
+      pageIds = (pagesForClub || []).map((p) => p.id);
+
+      // 해당 club 에 속한 페이지가 없다면, 바로 빈 결과 반환
+      if (pageIds.length === 0) {
+        return res.json({
+          changes: [],
+          pagination: {
+            totalCount: 0,
+            totalPages: 0,
+            hasMore: false,
+            limit,
+            offset,
+          },
+        });
+      }
+    }
+
+    // 1) 총 개수 (clubId 가 있으면 해당 club 의 page 들만 대상)
+    let countQuery = supabase
       .from("revisions")
       .select("id", { head: true, count: "exact" });
-    if (countErr) throw countErr;
+
+    if (pageIds) {
+      countQuery = countQuery.in("page_id", pageIds);
+    }
+
+    const { count: totalCount, error: countErr } = await countQuery;
+    if (countErr) {
+      throw countErr;
+    }
 
     // 2) 최근 리비전 목록
-    const { data: revs, error } = await supabase
+    let revsQuery = supabase
       .from("revisions")
       .select(
         `
         id, page_id, rev_number, diff, created_at,
-        pages!revisions_page_id_fkey(title),
+        pages!revisions_page_id_fkey(title, club_id),
         profiles!revisions_created_by_profiles_fkey(nickname)
       `
       )
@@ -32,7 +70,15 @@ exports.listChanges = async (req, res) => {
       .order("id", { ascending: false }) // 동순위 깨짐 방지
       .range(offset, offset + limit - 1);
 
-    if (error) throw error;
+    if (pageIds) {
+      revsQuery = revsQuery.in("page_id", pageIds);
+    }
+
+    const { data: revs, error } = await revsQuery;
+
+    if (error) {
+      throw error;
+    }
 
     // 3) per-revision +/– 문자수 계산
     //    최적화: 같은 page_id를 묶어서 캐시, 또는 최신→이전 순서로 누적/역패치
@@ -67,7 +113,10 @@ exports.listChanges = async (req, res) => {
         // (c) 텍스트 추출 → 문자 diff
         const prevText = extractTextFromPM(previousDoc);
         const currText = extractTextFromPM(currentDoc);
-        const { added, removed, replacements } = countCharDelta(prevText, currText);
+        const { added, removed, replacements } = countCharDelta(
+          prevText,
+          currText
+        );
 
         return {
           revision_id: r.id,
@@ -98,21 +147,31 @@ exports.listChanges = async (req, res) => {
     });
   }
 };
-// 최근 수정된 페이지 목록 반환
+// 최근 수정된 페이지 목록 반환 (선택적 club_id 필터링)
 exports.listPages = async (req, res) => {
   try {
     const limit = Math.max(parseInt(req.query.limit, 10) || 10, 1);
     const offset = Math.max(parseInt(req.query.offset, 10) || 0, 0);
 
-    const { data: pages, error } = await supabase
+    const clubId = req.query.clubId || null;
+
+    let query = supabase
       .from("pages")
       .select("id, title, updated_at", { count: "exact" })
       .order("updated_at", { ascending: false })
       .range(offset, offset + limit - 1);
-    if (error) throw error;
+
+    if (clubId) {
+      query = query.eq("club_id", clubId);
+    }
+
+    const { data: pages, error } = await query;
+    if (error) {
+      throw error;
+    }
 
     res.json({
-      items: pages.map((p) => ({
+      items: (pages || []).map((p) => ({
         page_id: p.id,
         title: p.title,
         updated_at: p.updated_at,
