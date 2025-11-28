@@ -21,7 +21,7 @@
     "jsonpatch": "^3.1.0",
     "jsonpointer": "^5.0.1",
     "mongoose": "^8.16.0",
-    "multer": "^2.0.1",
+    "multer": "^2.0.2",
     "prosemirror-model": "^1.25.2",
     "prosemirror-schema-basic": "^1.2.4",
     "swagger-ui-express": "^5.0.1"

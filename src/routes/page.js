@@ -8,4 +8,6 @@ router.get("/revision/revision_number", pc.getRevisionByNumber);
 router.get("/revision/current_rev_number", pc.getCurrentRevNumber);
 router.get("/revision/:revision_id", pc.getRevisionById);
 
+router.get("/page/club/summary", pc.getClubArchiveSummary);
+
 module.exports = router;
