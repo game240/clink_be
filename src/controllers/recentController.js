@@ -62,7 +62,7 @@ exports.listChanges = async (req, res) => {
       .select(
         `
         id, page_id, rev_number, diff, created_at,
-        pages!revisions_page_id_fkey(title, club_id),
+        pages!revisions_page_id_fkey(title, club_id, is_knowhow),
         profiles!revisions_created_by_profiles_fkey(nickname)
       `
       )
@@ -122,6 +122,7 @@ exports.listChanges = async (req, res) => {
           revision_id: r.id,
           page_id: r.page_id,
           title: r.pages?.title ?? null,
+          is_knowhow: r.pages?.is_knowhow ?? null,
           modifier: r.profiles?.nickname ?? null,
           edited_at: r.created_at,
           rev_number: r.rev_number,
