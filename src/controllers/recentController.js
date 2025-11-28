@@ -157,7 +157,7 @@ exports.listPages = async (req, res) => {
 
     let query = supabase
       .from("pages")
-      .select("id, title, updated_at", { count: "exact" })
+      .select("id, title, updated_at, is_knowhow", { count: "exact" })
       .order("updated_at", { ascending: false })
       .range(offset, offset + limit - 1);
 
@@ -175,6 +175,7 @@ exports.listPages = async (req, res) => {
         page_id: p.id,
         title: p.title,
         updated_at: p.updated_at,
+        is_knowhow: p.is_knowhow,
       })),
     });
   } catch (err) {
