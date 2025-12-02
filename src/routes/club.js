@@ -10,5 +10,6 @@ router.use(authenticate);
 
 router.get("/", cc.getClub);
 router.post("/", upload.single("thumbnail"), cc.createClub);
+router.get("/info", cc.getClubInfo);
 
 module.exports = router;

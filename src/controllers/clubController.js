@@ -3,10 +3,7 @@ const supabase = require("../config/supabaseClient");
 // 유저가 가입된 동아리 목록 가져오기
 exports.getClub = async (req, res) => {
   try {
-    const profileId =
-      (req.user && req.user.id) ||
-      req.query.profile_id ||
-      req.params.profile_id;
+    const profileId = (req.user && req.user.id) || req.query.profile_id || req.params.profile_id;
     if (!profileId) {
       return res.status(400).json({ error: "profile_id가 필요합니다." });
     }
@@ -86,12 +83,7 @@ exports.createClub = async (req, res) => {
       const fileBuffer = req.file.buffer;
       const mimeType = req.file.mimetype; // 'image/png', 'image/jpeg', ...
 
-      const fileExt =
-        mimeType === "image/png"
-          ? "png"
-          : mimeType === "image/webp"
-          ? "webp"
-          : "jpg";
+      const fileExt = mimeType === "image/png" ? "png" : mimeType === "image/webp" ? "webp" : "jpg";
 
       const filePath = `club/club_thumbnail/${club.id}.${fileExt}`;
 
@@ -105,9 +97,7 @@ exports.createClub = async (req, res) => {
       if (uploadErr) {
         // 이미지 업로드 실패: 동아리 삭제 후 에러 반환
         await supabase.from("clubs").delete().eq("id", club.id);
-        throw new Error(
-          `${uploadErr.message}: 동아리 썸네일 업로드에 실패했습니다.`
-        );
+        throw new Error(`${uploadErr.message}: 동아리 썸네일 업로드에 실패했습니다.`);
       }
 
       const {
@@ -149,9 +139,7 @@ exports.createClub = async (req, res) => {
         joined_at: new Date().toISOString(),
         ord: 1,
       })
-      .select(
-        "club_id, profile_id, role, status, officer_title, joined_at, ord"
-      )
+      .select("club_id, profile_id, role, status, officer_title, joined_at, ord")
       .single();
 
     if (memErr) {
@@ -164,6 +152,38 @@ exports.createClub = async (req, res) => {
     res.status(201).json({ club, membership });
   } catch (err) {
     console.error("POST /api/club Error:", err);
+    res.status(500).json({ error: err.message });
+  }
+};
+
+exports.getClubInfo = async (req, res) => {
+  try {
+    const { clubId } = req.query;
+
+    if (!clubId) {
+      return res.status(400).json({ error: "clubId가 필요합니다." });
+    }
+
+    const { data, error } = await supabase
+      .from("clubs")
+      .select("id, name, thumbnail_url")
+      .eq("id", clubId)
+      .single();
+
+    if (error) {
+      throw error;
+    }
+
+    if (!data) {
+      return res.status(404).json({ error: "동아리를 찾을 수 없습니다." });
+    }
+
+    res.json({
+      name: data.name,
+      thumbnailUrl: data.thumbnail_url ?? null,
+    });
+  } catch (err) {
+    console.error("GET /api/club/info Error:", err);
     res.status(500).json({ error: err.message });
   }
 };
