@@ -24,7 +24,7 @@ exports.getClub = async (req, res) => {
       `
       )
       .eq("profile_id", profileId)
-      .eq("club.club_members.status", "active")
+      .eq("status", "active")
       .order("ord", { ascending: true });
 
     if (error) {
