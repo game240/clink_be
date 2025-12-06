@@ -16,5 +16,7 @@ router.get("/search-users", cc.searchUsersByEmail);
 router.post("/invite", cc.inviteMember);
 router.get("/invitations", cc.getInvitations);
 router.patch("/invitations/:invitationId", cc.handleInvitation);
+router.get("/officers", cc.getClubOfficers);
+router.patch("/positions-graduation", cc.updateClubMemberPositionsGraduation);
 
 module.exports = router;

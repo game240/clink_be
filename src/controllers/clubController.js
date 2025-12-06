@@ -536,3 +536,113 @@ exports.handleInvitation = async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 };
+
+// 동아리 역할 목록 가져오기
+exports.getClubOfficers = async (req, res) => {
+  try {
+    const { clubId } = req.query;
+
+    if (!clubId) {
+      return res.status(400).json({ error: "clubId가 필요합니다." });
+    }
+
+    // club_officers에서 해당 동아리의 역할 목록 조회
+    const { data, error } = await supabase.from("club_officers").select("*").eq("club_id", clubId);
+
+    if (error) {
+      throw error;
+    }
+
+    // 역할 목록 반환 ["회장", "부회장", "회계", "홍보", "일반"]
+    const officers = (data ?? []).map((item) => item.name);
+
+    res.json(officers);
+  } catch (err) {
+    console.error("GET /api/club/officers Error:", err);
+    res.status(500).json({ error: err.message });
+  }
+};
+
+// 동아리 멤버 정보 업데이트
+exports.updateClubMemberPositionsGraduation = async (req, res) => {
+  try {
+    const { clubId, profileId } = req.body;
+    const { position, graduationStatus } = req.body;
+    const requesterId = (req.user && req.user.id) || req.body.requester_id;
+
+    if (!clubId) {
+      return res.status(400).json({ error: "clubId가 필요합니다." });
+    }
+
+    if (!profileId) {
+      return res.status(400).json({ error: "profileId가 필요합니다." });
+    }
+
+    // 업데이트할 필드 구성
+    const updateData = {};
+
+    // 직급(position) 변경 처리
+    if (position !== undefined) {
+      if (position === "회장") {
+        updateData.role = "president";
+        updateData.officer_title = null;
+      } else if (position === "일반") {
+        updateData.role = "member";
+        updateData.officer_title = null;
+      } else {
+        // 운영진 역할 (부회장, 회계, 홍보 등)
+        updateData.role = "officer";
+        updateData.officer_title = position;
+      }
+    }
+
+    // 졸업 상태 변경 처리
+    if (graduationStatus !== undefined) {
+      updateData.is_graduate = graduationStatus === "졸업";
+    }
+
+    // 업데이트할 필드가 없으면 에러
+    if (Object.keys(updateData).length === 0) {
+      return res.status(400).json({ error: "업데이트할 필드가 없습니다." });
+    }
+
+    // 멤버가 존재하는지 확인
+    const { data: existingMember, error: checkError } = await supabase
+      .from("club_members")
+      .select("id, club_id, profile_id, role, status")
+      .eq("club_id", clubId)
+      .eq("profile_id", profileId)
+      .eq("status", "active")
+      .single();
+
+    if (checkError || !existingMember) {
+      return res.status(404).json({ error: "멤버를 찾을 수 없습니다." });
+    }
+
+    // 회장은 role을 변경할 수 없도록 체크 (선택사항)
+    if (existingMember.role === "president" && position === "일반") {
+      return res.status(400).json({ error: "회장의 직급은 변경할 수 없습니다." });
+    }
+
+    // 업데이트 실행
+    const { data: updatedMember, error: updateError } = await supabase
+      .from("club_members")
+      .update(updateData)
+      .eq("club_id", clubId)
+      .eq("profile_id", profileId)
+      .select("club_id, profile_id, role, officer_title, is_graduate")
+      .single();
+
+    if (updateError) {
+      throw updateError;
+    }
+
+    res.json({
+      message: "멤버 정보가 업데이트되었습니다.",
+      member: updatedMember,
+    });
+  } catch (err) {
+    console.error("PATCH /api/club/members Error:", err);
+    res.status(500).json({ error: err.message });
+  }
+};
