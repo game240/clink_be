@@ -11,5 +11,10 @@ router.use(authenticate);
 router.get("/", cc.getClub);
 router.post("/", upload.single("thumbnail"), cc.createClub);
 router.get("/info", cc.getClubInfo);
+router.get("/members", cc.getClubMembers);
+router.get("/search-users", cc.searchUsersByEmail);
+router.post("/invite", cc.inviteMember);
+router.get("/invitations", cc.getInvitations);
+router.patch("/invitations/:invitationId", cc.handleInvitation);
 
 module.exports = router;
