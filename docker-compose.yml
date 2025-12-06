@@ -1,0 +1,9 @@
+services:
+  backend:
+    build: .
+    container_name: clink_be
+    ports:
+      - "3003:3003"
+    restart: always
+    env_file:
+      - .env
