@@ -8,9 +8,9 @@ exports.uploadFile = async (req, res) => {
     }
 
     // 1) private 폴더로 업로드
-    const filePath = `private/wiki-images/${Date.now()}_${file.originalname}`;
+    const filePath = `wiki/images/${Date.now()}_${file.originalname}`;
     const { data: uploadData, error: uploadErr } = await supabase.storage
-      .from("podo-wiki")
+      .from("clink")
       .upload(filePath, file.buffer, {
         cacheControl: "3600",
         upsert: false,
@@ -22,7 +22,7 @@ exports.uploadFile = async (req, res) => {
 
     // 2) 업로드된 경로로 서명된 URL 생성 (5분 유효)
     const { data: signData, error: signErr } = await supabase.storage
-      .from("podo-wiki")
+      .from("clink")
       .createSignedUrl(uploadData.path, 300);
     if (signErr) {
       throw signErr;
@@ -35,27 +35,21 @@ exports.uploadFile = async (req, res) => {
     });
   } catch (err) {
     console.error("Upload Error:", err);
-    res
-      .status(500)
-      .json({ message: "업로드 중 오류 발생", error: err.message });
+    res.status(500).json({ message: "업로드 중 오류 발생", error: err.message });
   }
 };
 
 // presignedURL only API
 exports.presignUrl = async (req, res) => {
   try {
-    const filePath = Array.isArray(req.query.path)
-      ? req.query.path[0]
-      : req.query.path;
+    const filePath = Array.isArray(req.query.path) ? req.query.path[0] : req.query.path;
 
     if (!filePath) {
-      return res
-        .status(400)
-        .json({ message: "path 쿼리 파라미터가 필요합니다." });
+      return res.status(400).json({ message: "path 쿼리 파라미터가 필요합니다." });
     }
 
     const { data: signData, error: signErr } = await supabase.storage
-      .from("podo-wiki")
+      .from("clink")
       .createSignedUrl(filePath, 300);
 
     if (signErr) {
@@ -66,26 +60,20 @@ exports.presignUrl = async (req, res) => {
     res.json({ signedUrl: signData.signedUrl });
   } catch (err) {
     console.error("GET /api/presign Error:", err);
-    res
-      .status(500)
-      .json({ message: "Signed URL 생성 중 오류 발생", error: err.message });
+    res.status(500).json({ message: "Signed URL 생성 중 오류 발생", error: err.message });
   }
 };
 
 exports.proxyImage = async (req, res) => {
   try {
-    const filePath = Array.isArray(req.query.path)
-      ? req.query.path[0]
-      : req.query.path;
+    const filePath = Array.isArray(req.query.path) ? req.query.path[0] : req.query.path;
     if (!filePath) {
-      return res
-        .status(400)
-        .json({ message: "path 쿼리 파라미터가 필요합니다." });
+      return res.status(400).json({ message: "path 쿼리 파라미터가 필요합니다." });
     }
 
     // Supabase에서 짧은 유효기간된 URL 생성(예: 5분)
     const { data: signData, error: signErr } = await supabase.storage
-      .from("podo-wiki")
+      .from("clink")
       .createSignedUrl(filePath, 300);
     if (signErr) {
       throw signErr;
@@ -95,8 +83,6 @@ exports.proxyImage = async (req, res) => {
     res.redirect(signData.signedUrl);
   } catch (err) {
     console.error("GET /api/image-proxy Error:", err);
-    res
-      .status(500)
-      .json({ message: "Signed URL 생성 중 오류 발생", error: err.message });
+    res.status(500).json({ message: "Signed URL 생성 중 오류 발생", error: err.message });
   }
 };
