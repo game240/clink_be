@@ -646,3 +646,241 @@ exports.updateClubMemberPositionsGraduation = async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 };
+
+// 동아리 직급 목록 가져오기
+exports.getClubPositions = async (req, res) => {
+  try {
+    const { clubId } = req.query;
+
+    if (!clubId) {
+      return res.status(400).json({ error: "clubId가 필요합니다." });
+    }
+
+    // club_officers에서 해당 동아리의 직급 목록 조회 (ord 순서대로)
+    const { data, error } = await supabase
+      .from("club_officers")
+      .select("*")
+      .eq("club_id", clubId)
+      .order("ord", { ascending: true });
+
+    if (error) {
+      throw error;
+    }
+
+    // ord=1은 무조건 "회장"으로 고정 (DB에 없으므로 먼저 추가)
+    const presidentPosition = {
+      id: "president",
+      ord: 1,
+      name: "회장",
+      canModify: true,
+    };
+
+    // DB에서 가져온 직급 목록 변환 (id, ord, name, canModify 포함)
+    const dbPositions = (data ?? []).map((item) => ({
+      id: item.id,
+      ord: item.ord,
+      name: item.name,
+      canModify: item.can_modify ?? true,
+    }));
+
+    // 회장을 첫 번째로, 그 뒤에 DB 결과 추가
+    const positions = [presidentPosition, ...dbPositions];
+
+    res.json(positions);
+  } catch (err) {
+    console.error("GET /api/club/positions Error:", err);
+    res.status(500).json({ error: err.message });
+  }
+};
+
+// 동아리 직급 추가
+exports.createClubPosition = async (req, res) => {
+  try {
+    const { clubId, id, name, ord, canModify } = req.body;
+
+    if (!clubId) {
+      return res.status(400).json({ error: "clubId가 필요합니다." });
+    }
+
+    // ord가 제공되지 않으면 기존 최대 ord + 1로 설정
+    let positionOrd = ord;
+    if (!positionOrd) {
+      const { data: maxOrdData, error: ordError } = await supabase
+        .from("club_officers")
+        .select("ord")
+        .eq("club_id", clubId)
+        .order("ord", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+
+      if (ordError) {
+        throw ordError;
+      }
+
+      positionOrd = maxOrdData ? maxOrdData.ord + 1 : 2; // 회장이 1이므로 기본값은 2
+    }
+
+    // club_officers에 직급 추가
+    const { data, error } = await supabase
+      .from("club_officers")
+      .insert({
+        club_id: clubId,
+        id,
+        name,
+        ord: positionOrd,
+        // can_modify: canModify ?? true,
+      })
+      .select("*")
+      .single();
+
+    if (error) {
+      throw error;
+    }
+
+    res.status(201).json({
+      id: data.id,
+      ord: data.ord,
+      name: data.name,
+      canModify: data.can_modify ?? true,
+    });
+  } catch (err) {
+    console.error("POST /api/club/positions Error:", err);
+    res.status(500).json({ error: err.message });
+  }
+};
+
+// 동아리 직급 변경
+exports.updateClubPosition = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { name, ord, canModify } = req.body;
+
+    if (!id) {
+      return res.status(400).json({ error: "id가 필요합니다." });
+    }
+
+    // 기존 직급 조회
+    const { data: existingPosition, error: checkError } = await supabase
+      .from("club_officers")
+      .select("*")
+      .eq("id", id)
+      .single();
+
+    if (checkError || !existingPosition) {
+      return res.status(404).json({ error: "직급을 찾을 수 없습니다." });
+    }
+
+    // ord=1인 경우 수정 불가 (회장은 고정)
+    if (existingPosition.ord === 1) {
+      return res.status(400).json({ error: "회장 직급은 수정할 수 없습니다." });
+    }
+
+    // 업데이트할 데이터 구성
+    const updateData = {};
+    if (name !== undefined) {
+      updateData.name = name;
+    }
+    if (ord !== undefined) {
+      updateData.ord = ord;
+    }
+    if (canModify !== undefined) {
+      updateData.can_modify = canModify;
+    }
+
+    // 업데이트할 필드가 없으면 에러
+    if (Object.keys(updateData).length === 0) {
+      return res.status(400).json({ error: "업데이트할 필드가 없습니다." });
+    }
+
+    // 직급 업데이트
+    const { data: updatedPosition, error: updateError } = await supabase
+      .from("club_officers")
+      .update(updateData)
+      .eq("id", id)
+      .select("*")
+      .single();
+
+    if (updateError) {
+      throw updateError;
+    }
+
+    res.json({
+      id: updatedPosition.id,
+      ord: updatedPosition.ord,
+      name: updatedPosition.name,
+      canModify: updatedPosition.can_modify ?? true,
+    });
+  } catch (err) {
+    console.error("PATCH /api/club/positions/:id Error:", err);
+    res.status(500).json({ error: err.message });
+  }
+};
+
+// 동아리 직급 삭제
+exports.deleteClubPosition = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    if (!id) {
+      return res.status(400).json({ error: "id가 필요합니다." });
+    }
+
+    // 기존 직급 조회
+    const { data: existingPosition, error: checkError } = await supabase
+      .from("club_officers")
+      .select("*")
+      .eq("id", id)
+      .single();
+
+    if (checkError || !existingPosition) {
+      return res.status(404).json({ error: "직급을 찾을 수 없습니다." });
+    }
+
+    // ord=1인 경우 삭제 불가 (회장은 고정)
+    if (existingPosition.ord === 1) {
+      return res.status(400).json({ error: "회장 직급은 삭제할 수 없습니다." });
+    }
+
+    const clubId = existingPosition.club_id;
+
+    // 직급 삭제
+    const { error: deleteError } = await supabase.from("club_officers").delete().eq("id", id);
+
+    if (deleteError) {
+      throw deleteError;
+    }
+
+    // 삭제 후 남은 직급들을 ord 순서대로 조회 (회장 제외, ord >= 2)
+    const { data: remainingPositions, error: fetchError } = await supabase
+      .from("club_officers")
+      .select("id")
+      .eq("club_id", clubId)
+      .gte("ord", 2)
+      .order("ord", { ascending: true });
+
+    if (fetchError) {
+      throw fetchError;
+    }
+
+    // ord를 2부터 순차적으로 재정렬
+    if (remainingPositions && remainingPositions.length > 0) {
+      const updatePromises = remainingPositions.map((position, index) => {
+        const newOrd = index + 2; // 2부터 시작 (회장이 1)
+        return supabase.from("club_officers").update({ ord: newOrd }).eq("id", position.id);
+      });
+
+      const updateResults = await Promise.all(updatePromises);
+      const hasError = updateResults.some((result) => result.error);
+      if (hasError) {
+        throw new Error("직급 순서 재정렬에 실패했습니다.");
+      }
+    }
+
+    res.json({
+      message: "직급이 삭제되었습니다.",
+    });
+  } catch (err) {
+    console.error("DELETE /api/club/positions/:id Error:", err);
+    res.status(500).json({ error: err.message });
+  }
+};
