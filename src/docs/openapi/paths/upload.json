@@ -1,8 +1,10 @@
 {
   "/api/upload": {
     "post": {
-      "summary": "Upload an image/file and receive a signed URL",
-      "tags": ["Upload"],
+      "summary": "이미지/파일 업로드 및 서명된 URL 받기",
+      "tags": [
+        "Upload"
+      ],
       "requestBody": {
         "required": true,
         "content": {
@@ -10,45 +12,206 @@
             "schema": {
               "type": "object",
               "properties": {
-                "file": { "type": "string", "format": "binary" }
+                "file": {
+                  "type": "string",
+                  "format": "binary"
+                }
               },
-              "required": ["file"]
+              "required": [
+                "file"
+              ]
             }
           }
         }
       },
       "responses": {
-        "200": { "description": "Upload success" },
-        "400": { "description": "File is required" },
-        "500": { "description": "Server error" }
+        "200": {
+          "description": "업로드 성공",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "path": {
+                    "type": "string",
+                    "description": "서버 저장 경로"
+                  },
+                  "signedUrl": {
+                    "type": "string",
+                    "description": "즉시 사용 가능한 서명된 URL"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "400": {
+          "description": "파일 필요",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "message": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "500": {
+          "description": "서버 오류",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "message": {
+                    "type": "string"
+                  },
+                  "error": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        }
       }
     }
   },
   "/api/presign": {
     "get": {
-      "summary": "Create a signed URL for a private file path",
-      "tags": ["Upload"],
+      "summary": "비공개 파일 경로에 대한 서명된 URL 생성",
+      "tags": [
+        "Upload"
+      ],
       "parameters": [
-        { "in": "query", "name": "path", "required": true, "schema": { "type": "string" }, "description": "File path in storage" }
+        {
+          "in": "query",
+          "name": "path",
+          "required": true,
+          "schema": {
+            "type": "string"
+          },
+          "description": "저장소의 파일 경로"
+        }
       ],
       "responses": {
-        "200": { "description": "Returns signedUrl" },
-        "400": { "description": "path query is required" },
-        "500": { "description": "Server error" }
+        "200": {
+          "description": "서명된 URL 반환",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "signedUrl": {
+                    "type": "string",
+                    "description": "5분 유효기간의 서명된 URL"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "400": {
+          "description": "path 쿼리 파라미터 필요",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "message": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "500": {
+          "description": "서버 오류",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "message": {
+                    "type": "string"
+                  },
+                  "error": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        }
       }
     }
   },
   "/api/image-proxy": {
     "get": {
-      "summary": "Redirect to a short-lived signed URL for an image",
-      "tags": ["Upload"],
+      "summary": "이미지용 단기 유효 서명된 URL로 리다이렉트",
+      "tags": [
+        "Upload"
+      ],
       "parameters": [
-        { "in": "query", "name": "path", "required": true, "schema": { "type": "string" } }
+        {
+          "in": "query",
+          "name": "path",
+          "required": true,
+          "schema": {
+            "type": "string"
+          }
+        }
       ],
       "responses": {
-        "302": { "description": "Redirects to signed URL" },
-        "400": { "description": "path query is required" },
-        "500": { "description": "Server error" }
+        "302": {
+          "description": "서명된 URL로 리다이렉트",
+          "headers": {
+            "Location": {
+              "description": "리다이렉트할 서명된 URL",
+              "schema": {
+                "type": "string"
+              }
+            }
+          }
+        },
+        "400": {
+          "description": "path 쿼리 파라미터 필요",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "message": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "500": {
+          "description": "서버 오류",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "message": {
+                    "type": "string"
+                  },
+                  "error": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        }
       }
     }
   }

@@ -1,14 +1,14 @@
 {
     "openapi": "3.0.3",
     "info": {
-        "title": "Podo Wiki API",
+        "title": "Clink API",
         "version": "1.0.0",
-        "description": "Podo Wiki 백엔드 OpenAPI 문서"
+        "description": "Clink 백엔드 OpenAPI 문서"
     },
     "servers": [
         {
-            "url": "http://localhost:3000",
-            "description": "Local"
+            "url": "http://3.211.113.158:3003/api",
+            "description": "Production"
         }
     ],
     "tags": [
@@ -23,6 +23,12 @@
         },
         {
             "name": "Recent"
+        },
+        {
+            "name": "Diff"
+        },
+        {
+            "name": "Club"
         }
     ]
 }

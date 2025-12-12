@@ -1,0 +1,1776 @@
+{
+    "/api/club": {
+        "get": {
+            "summary": "사용자가 가입한 동아리 목록 조회",
+            "tags": [
+                "Club"
+            ],
+            "security": [
+                {
+                    "bearerAuth": []
+                }
+            ],
+            "parameters": [
+                {
+                    "in": "query",
+                    "name": "profile_id",
+                    "schema": {
+                        "type": "string"
+                    },
+                    "description": "사용자 프로필 ID"
+                }
+            ],
+            "responses": {
+                "200": {
+                    "description": "메타데이터를 포함한 동아리 목록",
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string"
+                                        },
+                                        "name": {
+                                            "type": "string"
+                                        },
+                                        "description": {
+                                            "type": "string"
+                                        },
+                                        "location": {
+                                            "type": "string"
+                                        },
+                                        "members": {
+                                            "type": "integer"
+                                        },
+                                        "thumbnailUrl": {
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        },
+                                        "ord": {
+                                            "type": "integer"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "400": {
+                    "description": "profile_id is required",
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "error": {
+                                        "type": "string"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "401": {
+                    "description": "인증되지 않음",
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "error": {
+                                        "type": "string"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "500": {
+                    "description": "서버 오류",
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "error": {
+                                        "type": "string"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "post": {
+            "summary": "새 동아리 생성",
+            "tags": [
+                "Club"
+            ],
+            "security": [
+                {
+                    "bearerAuth": []
+                }
+            ],
+            "requestBody": {
+                "required": true,
+                "content": {
+                    "multipart/form-data": {
+                        "schema": {
+                            "type": "object",
+                            "required": [
+                                "name"
+                            ],
+                            "properties": {
+                                "name": {
+                                    "type": "string",
+                                    "description": "동아리 이름"
+                                },
+                                "location": {
+                                    "type": "string",
+                                    "description": "동아리 위치"
+                                },
+                                "description": {
+                                    "type": "string",
+                                    "description": "동아리 설명"
+                                },
+                                "thumbnail": {
+                                    "type": "string",
+                                    "format": "binary",
+                                    "description": "동아리 썸네일 이미지"
+                                },
+                                "profile_id": {
+                                    "type": "string",
+                                    "description": "생성자 프로필 ID"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "responses": {
+                "201": {
+                    "description": "동아리 생성 성공",
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "club": {
+                                        "type": "object",
+                                        "properties": {
+                                            "id": {
+                                                "type": "string"
+                                            },
+                                            "name": {
+                                                "type": "string"
+                                            },
+                                            "description": {
+                                                "type": [
+                                                    "string",
+                                                    "null"
+                                                ]
+                                            },
+                                            "created_by": {
+                                                "type": "string"
+                                            },
+                                            "created_at": {
+                                                "type": "string",
+                                                "format": "date-time"
+                                            },
+                                            "updated_at": {
+                                                "type": "string",
+                                                "format": "date-time"
+                                            },
+                                            "thumbnail_url": {
+                                                "type": [
+                                                    "string",
+                                                    "null"
+                                                ]
+                                            },
+                                            "thumbnail_updated_at": {
+                                                "type": [
+                                                    "string",
+                                                    "null"
+                                                ]
+                                            }
+                                        }
+                                    },
+                                    "membership": {
+                                        "type": "object",
+                                        "properties": {
+                                            "club_id": {
+                                                "type": "string"
+                                            },
+                                            "profile_id": {
+                                                "type": "string"
+                                            },
+                                            "role": {
+                                                "type": "string"
+                                            },
+                                            "status": {
+                                                "type": "string"
+                                            },
+                                            "officer_title": {
+                                                "type": [
+                                                    "string",
+                                                    "null"
+                                                ]
+                                            },
+                                            "joined_at": {
+                                                "type": "string",
+                                                "format": "date-time"
+                                            },
+                                            "ord": {
+                                                "type": "integer"
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "400": {
+                    "description": "name과 profile_id 필요",
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "error": {
+                                        "type": "string"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "401": {
+                    "description": "인증되지 않음",
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "error": {
+                                        "type": "string"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "500": {
+                    "description": "서버 오류",
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "error": {
+                                        "type": "string"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "/api/club/info": {
+        "get": {
+            "summary": "동아리 기본 정보 조회",
+            "tags": [
+                "Club"
+            ],
+            "security": [
+                {
+                    "bearerAuth": []
+                }
+            ],
+            "parameters": [
+                {
+                    "in": "query",
+                    "name": "clubId",
+                    "required": true,
+                    "schema": {
+                        "type": "string"
+                    },
+                    "description": "동아리 ID"
+                }
+            ],
+            "responses": {
+                "200": {
+                    "description": "동아리 이름 및 썸네일",
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "name": {
+                                        "type": "string"
+                                    },
+                                    "thumbnailUrl": {
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "400": {
+                    "description": "clubId 필요",
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "error": {
+                                        "type": "string"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "401": {
+                    "description": "인증되지 않음",
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "error": {
+                                        "type": "string"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "404": {
+                    "description": "동아리를 찾을 수 없음",
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "error": {
+                                        "type": "string"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "500": {
+                    "description": "서버 오류",
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "error": {
+                                        "type": "string"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "/api/club/members": {
+        "get": {
+            "summary": "동아리 멤버 목록 조회 (운영진, 일반, 졸업자)",
+            "tags": [
+                "Club"
+            ],
+            "security": [
+                {
+                    "bearerAuth": []
+                }
+            ],
+            "parameters": [
+                {
+                    "in": "query",
+                    "name": "clubId",
+                    "required": true,
+                    "schema": {
+                        "type": "string"
+                    },
+                    "description": "동아리 ID"
+                },
+                {
+                    "in": "query",
+                    "name": "profile_id",
+                    "schema": {
+                        "type": "string"
+                    },
+                    "description": "isMe 확인을 위한 사용자 프로필 ID"
+                }
+            ],
+            "responses": {
+                "200": {
+                    "description": "운영진, 일반 멤버, 졸업자로 그룹화된 멤버 목록",
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "officers": {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "object",
+                                            "properties": {
+                                                "id": {
+                                                    "type": "string"
+                                                },
+                                                "name": {
+                                                    "type": "string"
+                                                },
+                                                "position": {
+                                                    "type": "string"
+                                                },
+                                                "graduationStatus": {
+                                                    "type": "string"
+                                                },
+                                                "phone": {
+                                                    "type": "string"
+                                                },
+                                                "email": {
+                                                    "type": "string"
+                                                },
+                                                "isMe": {
+                                                    "type": "boolean"
+                                                },
+                                                "isPresident": {
+                                                    "type": "boolean"
+                                                }
+                                            }
+                                        }
+                                    },
+                                    "generalMembers": {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "object",
+                                            "properties": {
+                                                "id": {
+                                                    "type": "string"
+                                                },
+                                                "name": {
+                                                    "type": "string"
+                                                },
+                                                "position": {
+                                                    "type": "string"
+                                                },
+                                                "graduationStatus": {
+                                                    "type": "string"
+                                                },
+                                                "phone": {
+                                                    "type": "string"
+                                                },
+                                                "email": {
+                                                    "type": "string"
+                                                },
+                                                "isMe": {
+                                                    "type": "boolean"
+                                                },
+                                                "isPresident": {
+                                                    "type": "boolean"
+                                                }
+                                            }
+                                        }
+                                    },
+                                    "graduatedMembers": {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "object",
+                                            "properties": {
+                                                "id": {
+                                                    "type": "string"
+                                                },
+                                                "name": {
+                                                    "type": "string"
+                                                },
+                                                "position": {
+                                                    "type": "string"
+                                                },
+                                                "graduationStatus": {
+                                                    "type": "string"
+                                                },
+                                                "phone": {
+                                                    "type": "string"
+                                                },
+                                                "email": {
+                                                    "type": "string"
+                                                },
+                                                "isMe": {
+                                                    "type": "boolean"
+                                                },
+                                                "isPresident": {
+                                                    "type": "boolean"
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "400": {
+                    "description": "clubId 필요",
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "error": {
+                                        "type": "string"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "401": {
+                    "description": "인증되지 않음",
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "error": {
+                                        "type": "string"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "500": {
+                    "description": "서버 오류",
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "error": {
+                                        "type": "string"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "/api/club/search-users": {
+        "get": {
+            "summary": "동아리 초대를 위한 이메일로 유저 검색",
+            "tags": [
+                "Club"
+            ],
+            "security": [
+                {
+                    "bearerAuth": []
+                }
+            ],
+            "parameters": [
+                {
+                    "in": "query",
+                    "name": "email",
+                    "required": true,
+                    "schema": {
+                        "type": "string"
+                    },
+                    "description": "검색할 이메일 (부분 일치)"
+                },
+                {
+                    "in": "query",
+                    "name": "clubId",
+                    "required": true,
+                    "schema": {
+                        "type": "string"
+                    },
+                    "description": "동아리 ID"
+                },
+                {
+                    "in": "query",
+                    "name": "profile_id",
+                    "schema": {
+                        "type": "string"
+                    },
+                    "description": "isMe 확인을 위한 사용자 프로필 ID"
+                }
+            ],
+            "responses": {
+                "200": {
+                    "description": "초대 상태를 포함한 유저 목록",
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "user": {
+                                            "type": "object",
+                                            "properties": {
+                                                "id": {
+                                                    "type": "string"
+                                                },
+                                                "name": {
+                                                    "type": "string"
+                                                },
+                                                "position": {
+                                                    "type": "string"
+                                                },
+                                                "graduationStatus": {
+                                                    "type": "string"
+                                                },
+                                                "phone": {
+                                                    "type": "string"
+                                                },
+                                                "email": {
+                                                    "type": "string"
+                                                },
+                                                "isMe": {
+                                                    "type": "boolean"
+                                                },
+                                                "isPresident": {
+                                                    "type": "boolean"
+                                                }
+                                            }
+                                        },
+                                        "is_invited": {
+                                            "type": "boolean"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "400": {
+                    "description": "email과 clubId 필요",
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "error": {
+                                        "type": "string"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "401": {
+                    "description": "인증되지 않음",
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "error": {
+                                        "type": "string"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "500": {
+                    "description": "서버 오류",
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "error": {
+                                        "type": "string"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "/api/club/invite": {
+        "post": {
+            "summary": "동아리 멤버 초대",
+            "tags": [
+                "Club"
+            ],
+            "security": [
+                {
+                    "bearerAuth": []
+                }
+            ],
+            "requestBody": {
+                "required": true,
+                "content": {
+                    "application/json": {
+                        "schema": {
+                            "type": "object",
+                            "required": [
+                                "clubId",
+                                "profileId"
+                            ],
+                            "properties": {
+                                "clubId": {
+                                    "type": "string",
+                                    "description": "동아리 ID"
+                                },
+                                "profileId": {
+                                    "type": "string",
+                                    "description": "초대할 프로필 ID"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "responses": {
+                "201": {
+                    "description": "초대 전송 성공",
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "message": {
+                                        "type": "string"
+                                    },
+                                    "invitation": {
+                                        "type": "object",
+                                        "properties": {
+                                            "club_id": {
+                                                "type": "string"
+                                            },
+                                            "profile_id": {
+                                                "type": "string"
+                                            },
+                                            "role": {
+                                                "type": "string"
+                                            },
+                                            "status": {
+                                                "type": "string"
+                                            },
+                                            "ord": {
+                                                "type": "integer"
+                                            },
+                                            "invited_at": {
+                                                "type": "string",
+                                                "format": "date-time"
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "400": {
+                    "description": "clubId와 profileId 필요, 또는 이미 초대/가입된 유저",
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "error": {
+                                        "type": "string"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "401": {
+                    "description": "인증되지 않음",
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "error": {
+                                        "type": "string"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "500": {
+                    "description": "서버 오류",
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "error": {
+                                        "type": "string"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "/api/club/invitations": {
+        "get": {
+            "summary": "사용자의 대기 중인 초대 목록 조회",
+            "tags": [
+                "Club"
+            ],
+            "security": [
+                {
+                    "bearerAuth": []
+                }
+            ],
+            "parameters": [
+                {
+                    "in": "query",
+                    "name": "profile_id",
+                    "schema": {
+                        "type": "string"
+                    },
+                    "description": "사용자 프로필 ID"
+                }
+            ],
+            "responses": {
+                "200": {
+                    "description": "대기 중인 초대 목록",
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string"
+                                        },
+                                        "clubId": {
+                                            "type": "string"
+                                        },
+                                        "clubName": {
+                                            "type": "string"
+                                        },
+                                        "invitedAt": {
+                                            "type": "string",
+                                            "format": "date-time"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "400": {
+                    "description": "profile_id is required",
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "error": {
+                                        "type": "string"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "401": {
+                    "description": "인증되지 않음",
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "error": {
+                                        "type": "string"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "500": {
+                    "description": "서버 오류",
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "error": {
+                                        "type": "string"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "/api/club/invitations/{invitationId}": {
+        "patch": {
+            "summary": "초대 수락 또는 거절",
+            "tags": [
+                "Club"
+            ],
+            "security": [
+                {
+                    "bearerAuth": []
+                }
+            ],
+            "parameters": [
+                {
+                    "in": "path",
+                    "name": "invitationId",
+                    "required": true,
+                    "schema": {
+                        "type": "string"
+                    },
+                    "description": "초대 ID"
+                }
+            ],
+            "requestBody": {
+                "required": true,
+                "content": {
+                    "application/json": {
+                        "schema": {
+                            "type": "object",
+                            "required": [
+                                "action"
+                            ],
+                            "properties": {
+                                "action": {
+                                    "type": "string",
+                                    "enum": [
+                                        "accept",
+                                        "reject"
+                                    ],
+                                    "description": "수행할 작업"
+                                },
+                                "profile_id": {
+                                    "type": "string",
+                                    "description": "사용자 프로필 ID"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "responses": {
+                "200": {
+                    "description": "초대 처리 성공",
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "message": {
+                                        "type": "string"
+                                    },
+                                    "invitation": {
+                                        "type": "object",
+                                        "properties": {
+                                            "club_id": {
+                                                "type": "string"
+                                            },
+                                            "profile_id": {
+                                                "type": "string"
+                                            },
+                                            "role": {
+                                                "type": "string"
+                                            },
+                                            "status": {
+                                                "type": "string"
+                                            },
+                                            "joined_at": {
+                                                "type": "string",
+                                                "format": "date-time"
+                                            },
+                                            "ord": {
+                                                "type": "integer"
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "400": {
+                    "description": "action은 'accept' 또는 'reject'여야 하며, profile_id 필요",
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "error": {
+                                        "type": "string"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "401": {
+                    "description": "인증되지 않음",
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "error": {
+                                        "type": "string"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "404": {
+                    "description": "초대를 찾을 수 없음",
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "error": {
+                                        "type": "string"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "500": {
+                    "description": "서버 오류",
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "error": {
+                                        "type": "string"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "/api/club/officers": {
+        "get": {
+            "summary": "동아리의 운영진 역할 이름 목록 조회",
+            "tags": [
+                "Club"
+            ],
+            "security": [
+                {
+                    "bearerAuth": []
+                }
+            ],
+            "parameters": [
+                {
+                    "in": "query",
+                    "name": "clubId",
+                    "required": true,
+                    "schema": {
+                        "type": "string"
+                    },
+                    "description": "동아리 ID"
+                }
+            ],
+            "responses": {
+                "200": {
+                    "description": "운영진 역할 이름 배열",
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    }
+                },
+                "400": {
+                    "description": "clubId 필요",
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "error": {
+                                        "type": "string"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "401": {
+                    "description": "인증되지 않음",
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "error": {
+                                        "type": "string"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "500": {
+                    "description": "서버 오류",
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "error": {
+                                        "type": "string"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "/api/club/positions-graduation": {
+        "patch": {
+            "summary": "동아리 멤버 직급 및 졸업 상태 업데이트",
+            "tags": [
+                "Club"
+            ],
+            "security": [
+                {
+                    "bearerAuth": []
+                }
+            ],
+            "requestBody": {
+                "required": true,
+                "content": {
+                    "application/json": {
+                        "schema": {
+                            "type": "object",
+                            "required": [
+                                "clubId",
+                                "profileId"
+                            ],
+                            "properties": {
+                                "clubId": {
+                                    "type": "string",
+                                    "description": "동아리 ID"
+                                },
+                                "profileId": {
+                                    "type": "string",
+                                    "description": "업데이트할 프로필 ID"
+                                },
+                                "position": {
+                                    "type": "string",
+                                    "description": "직급 이름 (예: '회장', '부회장', '일반')"
+                                },
+                                "graduationStatus": {
+                                    "type": "string",
+                                    "enum": [
+                                        "재학",
+                                        "졸업"
+                                    ],
+                                    "description": "졸업 상태"
+                                },
+                                "requester_id": {
+                                    "type": "string",
+                                    "description": "요청자 프로필 ID"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "responses": {
+                "200": {
+                    "description": "멤버 업데이트 성공",
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "message": {
+                                        "type": "string"
+                                    },
+                                    "member": {
+                                        "type": "object",
+                                        "properties": {
+                                            "club_id": {
+                                                "type": "string"
+                                            },
+                                            "profile_id": {
+                                                "type": "string"
+                                            },
+                                            "role": {
+                                                "type": "string"
+                                            },
+                                            "officer_title": {
+                                                "type": [
+                                                    "string",
+                                                    "null"
+                                                ]
+                                            },
+                                            "is_graduate": {
+                                                "type": "boolean"
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "400": {
+                    "description": "clubId와 profileId 필요, 또는 잘못된 업데이트",
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "error": {
+                                        "type": "string"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "401": {
+                    "description": "인증되지 않음",
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "error": {
+                                        "type": "string"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "404": {
+                    "description": "멤버를 찾을 수 없음",
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "error": {
+                                        "type": "string"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "500": {
+                    "description": "서버 오류",
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "error": {
+                                        "type": "string"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "/api/club/positions": {
+        "get": {
+            "summary": "동아리 직급(역할) 목록 조회",
+            "tags": [
+                "Club"
+            ],
+            "security": [
+                {
+                    "bearerAuth": []
+                }
+            ],
+            "parameters": [
+                {
+                    "in": "query",
+                    "name": "clubId",
+                    "required": true,
+                    "schema": {
+                        "type": "string"
+                    },
+                    "description": "동아리 ID"
+                }
+            ],
+            "responses": {
+                "200": {
+                    "description": "id, ord, name, canModify를 포함한 직급 목록",
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string"
+                                        },
+                                        "ord": {
+                                            "type": "integer"
+                                        },
+                                        "name": {
+                                            "type": "string"
+                                        },
+                                        "canModify": {
+                                            "type": "boolean"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "400": {
+                    "description": "clubId 필요",
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "error": {
+                                        "type": "string"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "401": {
+                    "description": "인증되지 않음",
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "error": {
+                                        "type": "string"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "500": {
+                    "description": "서버 오류",
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "error": {
+                                        "type": "string"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "post": {
+            "summary": "새 동아리 직급 생성",
+            "tags": [
+                "Club"
+            ],
+            "security": [
+                {
+                    "bearerAuth": []
+                }
+            ],
+            "requestBody": {
+                "required": true,
+                "content": {
+                    "application/json": {
+                        "schema": {
+                            "type": "object",
+                            "required": [
+                                "clubId",
+                                "id",
+                                "name"
+                            ],
+                            "properties": {
+                                "clubId": {
+                                    "type": "string",
+                                    "description": "동아리 ID"
+                                },
+                                "id": {
+                                    "type": "string",
+                                    "description": "직급 ID"
+                                },
+                                "name": {
+                                    "type": "string",
+                                    "description": "직급 이름"
+                                },
+                                "ord": {
+                                    "type": "integer",
+                                    "description": "순서 (기본값: 최대값 + 1)"
+                                },
+                                "canModify": {
+                                    "type": "boolean",
+                                    "description": "직급 수정 가능 여부"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "responses": {
+                "201": {
+                    "description": "직급 생성 성공",
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "id": {
+                                        "type": "string"
+                                    },
+                                    "ord": {
+                                        "type": "integer"
+                                    },
+                                    "name": {
+                                        "type": "string"
+                                    },
+                                    "canModify": {
+                                        "type": "boolean"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "400": {
+                    "description": "clubId, id, name 필요",
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "error": {
+                                        "type": "string"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "401": {
+                    "description": "인증되지 않음",
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "error": {
+                                        "type": "string"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "500": {
+                    "description": "서버 오류",
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "error": {
+                                        "type": "string"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "/api/club/positions/{id}": {
+        "patch": {
+            "summary": "동아리 직급 수정",
+            "tags": [
+                "Club"
+            ],
+            "security": [
+                {
+                    "bearerAuth": []
+                }
+            ],
+            "parameters": [
+                {
+                    "in": "path",
+                    "name": "id",
+                    "required": true,
+                    "schema": {
+                        "type": "string"
+                    },
+                    "description": "Position ID"
+                }
+            ],
+            "requestBody": {
+                "required": true,
+                "content": {
+                    "application/json": {
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "name": {
+                                    "type": "string",
+                                    "description": "직급 이름"
+                                },
+                                "ord": {
+                                    "type": "integer",
+                                    "description": "순서"
+                                },
+                                "canModify": {
+                                    "type": "boolean",
+                                    "description": "직급 수정 가능 여부"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "responses": {
+                "200": {
+                    "description": "직급 수정 성공",
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "id": {
+                                        "type": "string"
+                                    },
+                                    "ord": {
+                                        "type": "integer"
+                                    },
+                                    "name": {
+                                        "type": "string"
+                                    },
+                                    "canModify": {
+                                        "type": "boolean"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "400": {
+                    "description": "id 필요, 또는 회장 직급은 수정 불가",
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "error": {
+                                        "type": "string"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "401": {
+                    "description": "인증되지 않음",
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "error": {
+                                        "type": "string"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "404": {
+                    "description": "직급을 찾을 수 없음",
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "error": {
+                                        "type": "string"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "500": {
+                    "description": "서버 오류",
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "error": {
+                                        "type": "string"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "delete": {
+            "summary": "동아리 직급 삭제",
+            "tags": [
+                "Club"
+            ],
+            "security": [
+                {
+                    "bearerAuth": []
+                }
+            ],
+            "parameters": [
+                {
+                    "in": "path",
+                    "name": "id",
+                    "required": true,
+                    "schema": {
+                        "type": "string"
+                    },
+                    "description": "Position ID"
+                }
+            ],
+            "responses": {
+                "200": {
+                    "description": "직급 삭제 성공",
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "message": {
+                                        "type": "string"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "400": {
+                    "description": "id 필요, 또는 회장 직급은 삭제 불가",
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "error": {
+                                        "type": "string"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "401": {
+                    "description": "인증되지 않음",
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "error": {
+                                        "type": "string"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "404": {
+                    "description": "직급을 찾을 수 없음",
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "error": {
+                                        "type": "string"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "500": {
+                    "description": "서버 오류",
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "error": {
+                                        "type": "string"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

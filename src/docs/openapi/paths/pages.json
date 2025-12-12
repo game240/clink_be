@@ -1,11 +1,28 @@
 {
   "/api/page": {
     "post": {
-      "summary": "Save or update a page",
-      "tags": ["Pages"],
-      "security": [{ "bearerAuth": [] }],
+      "summary": "페이지 저장 또는 업데이트",
+      "tags": [
+        "Pages"
+      ],
+      "security": [
+        {
+          "bearerAuth": []
+        }
+      ],
       "parameters": [
-        { "in": "query", "name": "with_line_diff", "schema": { "type": "string", "enum": ["0", "1"] }, "description": "Include Git-like line diff information in response when set to '1'" }
+        {
+          "in": "query",
+          "name": "with_line_diff",
+          "schema": {
+            "type": "string",
+            "enum": [
+              "0",
+              "1"
+            ]
+          },
+          "description": "'1'로 설정 시 응답에 Git 스타일 라인 diff 정보 포함"
+        }
       ],
       "requestBody": {
         "required": true,
@@ -13,48 +30,731 @@
           "application/json": {
             "schema": {
               "type": "object",
-              "required": ["title", "content"],
+              "required": [
+                "title",
+                "content"
+              ],
               "properties": {
-                "title": { "type": "string" },
-                "summary": { "type": "string" },
-                "content": { "type": "object", "description": "ProseMirror JSON document" }
+                "title": {
+                  "type": "string"
+                },
+                "summary": {
+                  "type": "string"
+                },
+                "content": {
+                  "type": "object",
+                  "description": "ProseMirror JSON document"
+                }
               }
             }
           }
         }
       },
       "responses": {
-        "200": { "description": "Page saved successfully" },
-        "400": { "description": "Missing required fields" },
-        "401": { "description": "Unauthorized" },
-        "500": { "description": "Server error" }
+        "200": {
+          "description": "페이지 저장 성공",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "message": {
+                    "type": "string"
+                  },
+                  "page_id": {
+                    "type": "string"
+                  },
+                  "revision_id": {
+                    "type": "string"
+                  },
+                  "rev_number": {
+                    "type": "integer"
+                  },
+                  "is_snapshot": {
+                    "type": "boolean"
+                  },
+                  "json_patch_summary": {
+                    "type": "object"
+                  },
+                  "line_diff": {
+                    "type": "object",
+                    "properties": {
+                      "ops": {
+                        "type": "array"
+                      },
+                      "summary": {
+                        "type": "object"
+                      },
+                      "unified_patch": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "400": {
+          "description": "필수 필드 누락",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "error": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "401": {
+          "description": "인증되지 않음",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "error": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "500": {
+          "description": "서버 오류",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "error": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        }
       }
     },
     "get": {
-      "summary": "Get page by title",
-      "tags": ["Pages"],
+      "summary": "제목으로 페이지 조회",
+      "tags": [
+        "Pages"
+      ],
       "parameters": [
-        { "in": "query", "name": "title", "required": true, "schema": { "type": "string" } }
+        {
+          "in": "query",
+          "name": "title",
+          "required": true,
+          "schema": {
+            "type": "string"
+          }
+        }
       ],
       "responses": {
-        "200": { "description": "Page metadata and content" },
-        "400": { "description": "title query is required" },
-        "404": { "description": "Page or revision not found" },
-        "500": { "description": "Server error" }
+        "200": {
+          "description": "페이지 메타데이터 및 내용",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "meta": {
+                    "type": "object",
+                    "properties": {
+                      "id": {
+                        "type": "string"
+                      },
+                      "title": {
+                        "type": "string"
+                      },
+                      "club_id": {
+                        "type": "string"
+                      },
+                      "is_public": {
+                        "type": "boolean"
+                      },
+                      "is_knowhow": {
+                        "type": "boolean"
+                      },
+                      "created_at": {
+                        "type": "string",
+                        "format": "date-time"
+                      },
+                      "updated_at": {
+                        "type": "string",
+                        "format": "date-time"
+                      },
+                      "created_by": {
+                        "type": "string"
+                      },
+                      "current_rev": {
+                        "type": "string"
+                      },
+                      "current_rev_number": {
+                        "type": "integer"
+                      },
+                      "categories": {
+                        "type": "array",
+                        "items": {
+                          "type": "object",
+                          "properties": {
+                            "category_id": {
+                              "type": "string"
+                            },
+                            "name": {
+                              "type": "string"
+                            }
+                          }
+                        }
+                      }
+                    }
+                  },
+                  "content": {
+                    "type": "object",
+                    "description": "ProseMirror JSON document"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "400": {
+          "description": "title query is required",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "error": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "404": {
+          "description": "페이지 또는 리비전을 찾을 수 없음",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "error": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "500": {
+          "description": "서버 오류",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "error": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        }
       }
     }
   },
   "/api/revision/{revision_id}": {
     "get": {
-      "summary": "Get a specific revision by ID",
-      "tags": ["Pages"],
+      "summary": "ID로 특정 리비전 조회",
+      "tags": [
+        "Pages"
+      ],
       "parameters": [
-        { "in": "path", "name": "revision_id", "required": true, "schema": { "type": "string" } }
+        {
+          "in": "path",
+          "name": "revision_id",
+          "required": true,
+          "schema": {
+            "type": "string"
+          }
+        }
       ],
       "responses": {
-        "200": { "description": "Revision metadata and reconstructed content" },
-        "404": { "description": "Revision not found" },
-        "500": { "description": "Server error" }
+        "200": {
+          "description": "리비전 메타데이터 및 재구성된 내용",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "meta": {
+                    "type": "object",
+                    "properties": {
+                      "id": {
+                        "type": "string"
+                      },
+                      "title": {
+                        "type": "string"
+                      },
+                      "created_at": {
+                        "type": "string",
+                        "format": "date-time"
+                      },
+                      "updated_at": {
+                        "type": "string",
+                        "format": "date-time"
+                      },
+                      "created_by": {
+                        "type": "string"
+                      },
+                      "current_rev": {
+                        "type": "string"
+                      },
+                      "current_rev_number": {
+                        "type": "integer"
+                      },
+                      "categories": {
+                        "type": "array",
+                        "items": {
+                          "type": "object",
+                          "properties": {
+                            "category_id": {
+                              "type": "string"
+                            },
+                            "name": {
+                              "type": "string"
+                            }
+                          }
+                        }
+                      }
+                    }
+                  },
+                  "content": {
+                    "type": "object",
+                    "description": "ProseMirror JSON document"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "404": {
+          "description": "리비전을 찾을 수 없음",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "error": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "500": {
+          "description": "서버 오류",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "error": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "/api/revision/revision_number": {
+    "get": {
+      "summary": "리비전 번호로 리비전 조회",
+      "tags": [
+        "Pages"
+      ],
+      "parameters": [
+        {
+          "in": "query",
+          "name": "title",
+          "required": true,
+          "schema": {
+            "type": "string"
+          },
+          "description": "페이지 제목"
+        },
+        {
+          "in": "query",
+          "name": "rev_number",
+          "required": true,
+          "schema": {
+            "type": "string"
+          },
+          "description": "리비전 번호 (정수 또는 'v' 접두사)"
+        }
+      ],
+      "responses": {
+        "200": {
+          "description": "Revision metadata and content",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "meta": {
+                    "type": "object",
+                    "properties": {
+                      "id": {
+                        "type": "string"
+                      },
+                      "title": {
+                        "type": "string"
+                      },
+                      "created_at": {
+                        "type": "string",
+                        "format": "date-time"
+                      },
+                      "updated_at": {
+                        "type": "string",
+                        "format": "date-time"
+                      },
+                      "created_by": {
+                        "type": "string"
+                      },
+                      "current_rev": {
+                        "type": "string"
+                      },
+                      "current_rev_number": {
+                        "type": "integer"
+                      },
+                      "categories": {
+                        "type": "array",
+                        "items": {
+                          "type": "object",
+                          "properties": {
+                            "category_id": {
+                              "type": "string"
+                            },
+                            "name": {
+                              "type": "string"
+                            }
+                          }
+                        }
+                      }
+                    }
+                  },
+                  "content": {
+                    "type": "object",
+                    "description": "ProseMirror JSON document"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "400": {
+          "description": "title과 rev_number 필요",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "error": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "404": {
+          "description": "페이지 또는 리비전을 찾을 수 없음",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "error": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "500": {
+          "description": "서버 오류",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "error": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "/api/revision/current_rev_number": {
+    "get": {
+      "summary": "페이지의 현재 리비전 번호 조회",
+      "tags": [
+        "Pages"
+      ],
+      "parameters": [
+        {
+          "in": "query",
+          "name": "title",
+          "required": true,
+          "schema": {
+            "type": "string"
+          },
+          "description": "페이지 제목"
+        }
+      ],
+      "responses": {
+        "200": {
+          "description": "현재 리비전 번호 및 메타데이터",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "page_id": {
+                    "type": "string"
+                  },
+                  "title": {
+                    "type": "string"
+                  },
+                  "revision_id": {
+                    "type": "string"
+                  },
+                  "current_rev_number": {
+                    "type": "integer"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "400": {
+          "description": "title query is required",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "error": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "404": {
+          "description": "페이지를 찾을 수 없거나 리비전이 존재하지 않음",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "error": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "500": {
+          "description": "서버 오류",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "error": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "/api/page/club/summary": {
+    "get": {
+      "summary": "동아리 아카이브 요약 조회 (노하우 페이지)",
+      "tags": [
+        "Pages"
+      ],
+      "parameters": [
+        {
+          "in": "query",
+          "name": "clubId",
+          "required": true,
+          "schema": {
+            "type": "string"
+          },
+          "description": "동아리 ID"
+        }
+      ],
+      "responses": {
+        "200": {
+          "description": "노하우 페이지를 포함한 동아리 아카이브 요약",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "knowhow": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "id": {
+                          "type": "string"
+                        },
+                        "title": {
+                          "type": "string"
+                        },
+                        "created_at": {
+                          "type": "string",
+                          "format": "date-time"
+                        },
+                        "updated_at": {
+                          "type": "string",
+                          "format": "date-time"
+                        },
+                        "created_by": {
+                          "type": "string"
+                        },
+                        "club_id": {
+                          "type": "string"
+                        },
+                        "is_public": {
+                          "type": "boolean"
+                        },
+                        "is_knowhow": {
+                          "type": "boolean"
+                        }
+                      }
+                    }
+                  },
+                  "work": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "id": {
+                          "type": "string"
+                        },
+                        "title": {
+                          "type": "string"
+                        },
+                        "created_at": {
+                          "type": "string",
+                          "format": "date-time"
+                        },
+                        "updated_at": {
+                          "type": "string",
+                          "format": "date-time"
+                        },
+                        "created_by": {
+                          "type": "string"
+                        },
+                        "club_id": {
+                          "type": "string"
+                        },
+                        "is_public": {
+                          "type": "boolean"
+                        },
+                        "is_knowhow": {
+                          "type": "boolean"
+                        }
+                      }
+                    }
+                  },
+                  "stats": {
+                    "type": "object",
+                    "properties": {
+                      "knowhowTotal": {
+                        "type": "integer"
+                      },
+                      "workTotal": {
+                        "type": "integer"
+                      },
+                      "total": {
+                        "type": "integer"
+                      },
+                      "pageSize": {
+                        "type": "integer"
+                      },
+                      "knowhowTotalPages": {
+                        "type": "integer"
+                      },
+                      "workTotalPages": {
+                        "type": "integer"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "400": {
+          "description": "clubId 쿼리 파라미터 필요",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "error": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "500": {
+          "description": "서버 오류",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "error": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        }
       }
     }
   }

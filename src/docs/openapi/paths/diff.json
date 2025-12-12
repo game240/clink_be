@@ -1,0 +1,131 @@
+{
+    "/api/diff": {
+        "get": {
+            "summary": "페이지의 두 리비전 간 Git 스타일 diff 조회",
+            "tags": [
+                "Diff"
+            ],
+            "parameters": [
+                {
+                    "in": "query",
+                    "name": "title",
+                    "required": true,
+                    "schema": {
+                        "type": "string"
+                    },
+                    "description": "페이지 제목"
+                },
+                {
+                    "in": "query",
+                    "name": "left_rev",
+                    "schema": {
+                        "type": "string"
+                    },
+                    "description": "왼쪽 리비전 (번호 또는 'current', 기본값: 'current')"
+                },
+                {
+                    "in": "query",
+                    "name": "right_rev",
+                    "schema": {
+                        "type": "string"
+                    },
+                    "description": "오른쪽 리비전 (번호 또는 'current', 기본값: 'current')"
+                },
+                {
+                    "in": "query",
+                    "name": "context",
+                    "schema": {
+                        "type": "integer",
+                        "minimum": 0
+                    },
+                    "description": "변경 사항 주변 컨텍스트 라인 수 (기본값: 3)"
+                }
+            ],
+            "responses": {
+                "200": {
+                    "description": "Diff 작업 및 요약",
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "title": {
+                                        "type": "string"
+                                    },
+                                    "page_id": {
+                                        "type": "string"
+                                    },
+                                    "left_rev": {
+                                        "type": "string"
+                                    },
+                                    "left_rev_number": {
+                                        "type": "integer"
+                                    },
+                                    "right_rev": {
+                                        "type": "string"
+                                    },
+                                    "right_rev_number": {
+                                        "type": "integer"
+                                    },
+                                    "ops": {
+                                        "type": "array",
+                                        "description": "Git-like diff operations"
+                                    },
+                                    "summary": {
+                                        "type": "object",
+                                        "description": "Diff summary statistics"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "400": {
+                    "description": "title 쿼리 파라미터 필요",
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "error": {
+                                        "type": "string"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "404": {
+                    "description": "페이지 또는 리비전을 찾을 수 없음",
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "error": {
+                                        "type": "string"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "500": {
+                    "description": "서버 오류",
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "error": {
+                                        "type": "string"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
